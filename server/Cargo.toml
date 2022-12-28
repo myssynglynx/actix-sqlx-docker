@@ -1,5 +1,5 @@
 [package]
-name = "actix-sqlx-docker"
+name = "actix-sqlx-vite"
 version = "0.1.0"
 edition = "2021"
 

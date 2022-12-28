@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  client:
+    container_name: client-dev
+    build:
+      context: client/
+      target: runtime
+      dockerfile: Dockerfile
+    environment:
+      - PORT=5000
+      - VITE_BACKEND_URL=http://localhost:8000
+    command: bash -c "yarn && yarn dev"
+    ports:
+      - 5000:5000
+    volumes:
+      - ./client:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+  server:
+    container_name: server-dev
+    build:
+      context: server/
+      target: runtime
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - db
+    environment:
+      - DB_NAME=test-db
+      - DB_USER=dev
+      - DB_PASSWORD=test
+      - DB_PORT=5432
+      - DB_HOST=db
+    ports:
+      - 3000:3000
+    command: "cargo watch -x run"
+    volumes:
+      - ./server:/usr/src/app/
+      - /usr/src/app/target
+      - /usr/local/cargo
+    restart: unless-stopped
+  db:
+    container_name: db-dev
+    image: postgres:14.3-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=test-db
+      - POSTGRES_USER=dev
+      - POSTGRES_PASSWORD=test
+    ports:
+      - 5432:5432
+    volumes:
+      - db:/var/lib/postgresql/database
+volumes:
+  client:
+  server:
+  db:
+    driver: local

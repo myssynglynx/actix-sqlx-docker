@@ -6,6 +6,7 @@ WORKDIR /usr/src/app
 # generic chef to minimize redundancy
 FROM rust-alpine as chef
 RUN cargo install cargo-chef
+RUN cargo install cargo-watch
 
 # generate a recipe file for dependencies
 FROM chef as planner
@@ -18,32 +19,9 @@ COPY --from=planner /usr/src/app/recipe.json recipe.json
 RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path recipe.json
 
 # use rust:alpine3.17 docker image as builder
-FROM rust-alpine as builder
-# create user
-ENV USER=dev
-ENV UID=1337
-RUN adduser \
-  --disabled-password \
-  --gecos "" \
-  --home "/nonexistent" \
-  --shell "/sbin/nologin" \
-  --no-create-home \
-  --uid "${UID}" \
-  "${USER}"
+FROM rust-alpine as runtime
 # copy build image
 COPY . .
 COPY --from=cacher /usr/src/app/target target
 COPY --from=cacher /usr/local/cargo /usr/local/cargo
-RUN cargo build --release
-
-# run executable from distroless build
-FROM --platform=linux/amd64 gcr.io/distroless/cc-debian11 as development
-# copy user from builder
-COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder /etc/group /etc/group
-# copy executable from builder
-COPY --from=builder /usr/src/app/target/release/actix-sqlx-docker /usr/local/bin/actix-sqlx-docker
-# set user
-USER dev:dev
-# run executable
-CMD ["/usr/local/bin/actix-sqlx-docker"]
+RUN cargo build

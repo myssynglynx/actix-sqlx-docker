@@ -24,6 +24,7 @@ async fn main() -> std::io::Result<()> {
         "postgres://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
     );
 
+    println!("Change was made!!!");
     println!("Establishing connection pool at {}:{}...", &db_host, &db_port);
 
     let pool = PgPoolOptions::new()
