@@ -1,9 +1,7 @@
 # actix-sqlx-vite
 ## Basic scaffolding for vite react-ts frontend, actix backend, & postgres database
-
-## Running locally:
-This uses `cargo-watch` to update server with changes.
 ---
+## Running locally:
 ### Start up:
 **Using script:**
 ```
